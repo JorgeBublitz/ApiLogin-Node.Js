@@ -1,6 +1,4 @@
-# 🔐 Auth API
-
-> 🎓 **Projeto Acadêmico** — desenvolvido durante o curso de Ciência da Computação (UNIPE).
+# Auth API
 
 ## API de Autenticação com JWT
 
