@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
+import { ZodError } from 'zod';
 import { swaggerDocument } from './config/swagger';
 import { env } from './config/env';
 import { AppError } from './utils/app-error';
@@ -49,6 +50,16 @@ app.use((req: Request, res: Response) => {
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({ error: err.message });
+  }
+
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      error: 'Erro de validação',
+      details: err.issues.map((issue) => ({
+        field: issue.path.join('.'),
+        message: issue.message,
+      })),
+    });
   }
 
   console.error(err.stack);
