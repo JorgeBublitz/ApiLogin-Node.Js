@@ -1,5 +1,7 @@
 # 🔐 Auth API
 
+> 🎓 **Projeto Acadêmico** — desenvolvido durante o curso de Ciência da Computação (UNIPE).
+
 ## API de Autenticação com JWT
 
 [![Licença](https://img.shields.io/badge/Licen%C3%A7a-MIT-informational?style=for-the-badge)](LICENSE)
