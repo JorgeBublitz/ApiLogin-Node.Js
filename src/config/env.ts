@@ -2,17 +2,21 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const env = {
-  port: process.env.PORT || 3000,
-  nodeEnv: process.env.NODE_ENV || 'development',
-  jwtAccessSecret: process.env.JWT_ACCESS_SECRET!,
-  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET!,
-  jwtAccessExpiration: process.env.JWT_ACCESS_EXPIRATION || '15m',
-  jwtRefreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
-};
-
-// Validação básica
-if (!env.jwtAccessSecret || !env.jwtRefreshSecret) {
-  throw new Error('JWT secrets must be defined in environment variables');
+function requireEnv(name: string, fallback?: string): string {
+  const value = process.env[name] ?? fallback;
+  if (value === undefined) {
+    throw new Error(`Variável de ambiente obrigatória não definida: ${name}`);
+  }
+  return value;
 }
 
+export const env = {
+  port: Number(process.env.PORT) || 3000,
+  nodeEnv: process.env.NODE_ENV || 'development',
+  corsOrigin: requireEnv('CORS_ORIGIN', 'http://localhost:5173'),
+  jwtAccessSecret: requireEnv('JWT_ACCESS_SECRET'),
+  jwtRefreshSecret: requireEnv('JWT_REFRESH_SECRET'),
+  jwtAccessExpiration: process.env.JWT_ACCESS_EXPIRATION || '15m',
+  jwtRefreshExpiration: process.env.JWT_REFRESH_EXPIRATION || '7d',
+  databaseUrl: process.env.DATABASE_URL,
+};

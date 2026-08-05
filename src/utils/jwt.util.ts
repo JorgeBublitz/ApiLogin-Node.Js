@@ -22,6 +22,10 @@ export class JwtUtil {
     }
   }
 
+  private static cleanPayload(payload: JwtPayload): JwtPayload {
+    return { userId: payload.userId, email: payload.email };
+  }
+
   /**
    * Gera um token de acesso (access token)
    */
@@ -29,7 +33,7 @@ export class JwtUtil {
     const options: SignOptions = {
       expiresIn: this.parseExpiration(env.jwtAccessExpiration),
     };
-    return jwt.sign(payload, env.jwtAccessSecret as string, options);
+    return jwt.sign(this.cleanPayload(payload), env.jwtAccessSecret, options);
   }
 
   /**
@@ -39,31 +43,30 @@ export class JwtUtil {
     const options: SignOptions = {
       expiresIn: this.parseExpiration(env.jwtRefreshExpiration),
     };
-    return jwt.sign(payload, env.jwtRefreshSecret as string, options);
+    return jwt.sign(this.cleanPayload(payload), env.jwtRefreshSecret, options);
   }
 
   /**
    * Verifica e decodifica um access token
    */
   static verifyAccessToken(token: string): JwtPayload {
-    return jwt.verify(token, env.jwtAccessSecret as string) as JwtPayload;
+    return jwt.verify(token, env.jwtAccessSecret) as JwtPayload;
   }
 
   /**
    * Verifica e decodifica um refresh token
    */
   static verifyRefreshToken(token: string): JwtPayload {
-    return jwt.verify(token, env.jwtRefreshSecret as string) as JwtPayload;
+    return jwt.verify(token, env.jwtRefreshSecret) as JwtPayload;
   }
 
   /**
    * Calcula a data de expiração do refresh token
    */
   static getRefreshTokenExpirationDate(): Date {
-    const expirationString = env.jwtRefreshExpiration as string;
     const now = new Date();
 
-    const match = expirationString.match(/^(\d+)([dhms])$/);
+    const match = env.jwtRefreshExpiration.match(/^(\d+)([dhms])$/);
     if (!match) throw new Error('Invalid JWT_REFRESH_EXPIRATION format');
 
     const value = parseInt(match[1], 10);

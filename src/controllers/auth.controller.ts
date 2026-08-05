@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service';
+import { AppError } from '../utils/app-error';
 import { RegisterInput, LoginInput, RefreshTokenInput } from '../utils/validation.schemas';
 
 export class AuthController {
@@ -17,11 +18,7 @@ export class AuthController {
         data: tokens,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      AuthController.handleError(res, error);
     }
   }
 
@@ -39,11 +36,7 @@ export class AuthController {
         data: tokens,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(401).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      AuthController.handleError(res, error);
     }
   }
 
@@ -61,11 +54,7 @@ export class AuthController {
         data: tokens,
       });
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(401).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      AuthController.handleError(res, error);
     }
   }
 
@@ -82,11 +71,7 @@ export class AuthController {
         message: 'Logout realizado com sucesso',
       });
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: 'Erro interno do servidor' });
-      }
+      AuthController.handleError(res, error);
     }
   }
 
@@ -109,8 +94,20 @@ export class AuthController {
         },
       });
     } catch (error) {
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      AuthController.handleError(res, error);
     }
   }
-}
 
+  /**
+   * Centraliza o tratamento de erros dos controllers
+   */
+  private static handleError(res: Response, error: unknown): void {
+    if (error instanceof AppError) {
+      res.status(error.statusCode).json({ error: error.message });
+      return;
+    }
+
+    console.error(error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+}

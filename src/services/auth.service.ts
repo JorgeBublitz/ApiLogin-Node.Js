@@ -1,6 +1,7 @@
 import prisma from '../config/prisma';
 import { HashUtil } from '../utils/hash.util';
 import { JwtUtil } from '../utils/jwt.util';
+import { AppError } from '../utils/app-error';
 import { TokenPair } from '../types/jwt.types';
 import { RegisterInput, LoginInput } from '../utils/validation.schemas';
 
@@ -13,9 +14,9 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new Error('Email já está em uso');
+      throw new AppError('Email já está em uso', 409);
     }
-    
+
     const hashedPassword = await HashUtil.hashPassword(data.password);
 
     // Criar usuário
@@ -51,15 +52,16 @@ export class AuthService {
       where: { email: data.email },
     });
 
+    // Mensagem genérica para não revelar se o email existe
     if (!user) {
-      throw new Error('Credenciais inválidas');
+      throw new AppError('Credenciais inválidas', 401);
     }
 
     // Verificar senha
     const isPasswordValid = await HashUtil.comparePassword(data.password, user.password);
 
     if (!isPasswordValid) {
-      throw new Error('Credenciais inválidas');
+      throw new AppError('Credenciais inválidas', 401);
     }
 
     // Gerar tokens
@@ -89,7 +91,7 @@ export class AuthService {
     });
 
     if (!storedToken) {
-      throw new Error('Refresh token inválido');
+      throw new AppError('Refresh token inválido', 401);
     }
 
     if (storedToken.expiresAt < new Date()) {
@@ -97,7 +99,7 @@ export class AuthService {
       await prisma.refreshToken.delete({
         where: { id: storedToken.id },
       });
-      throw new Error('Refresh token expirado');
+      throw new AppError('Refresh token expirado', 401);
     }
 
     // Remover o refresh token antigo (rotação de tokens)
@@ -106,8 +108,14 @@ export class AuthService {
     });
 
     // Gerar novos tokens
-    const newAccessToken = JwtUtil.generateAccessToken(payload);
-    const newRefreshToken = JwtUtil.generateRefreshToken(payload);
+    const newAccessToken = JwtUtil.generateAccessToken({
+      userId: payload.userId,
+      email: payload.email,
+    });
+    const newRefreshToken = JwtUtil.generateRefreshToken({
+      userId: payload.userId,
+      email: payload.email,
+    });
 
     // Salvar novo refresh token no banco
     await prisma.refreshToken.create({
@@ -120,11 +128,10 @@ export class AuthService {
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }
-  
+
   static async logout(refreshToken: string): Promise<void> {
     await prisma.refreshToken.deleteMany({
       where: { token: refreshToken },
     });
   }
 }
-
