@@ -1,6 +1,6 @@
 {
   "name": "auth-api",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "API de autenticação completa com JWT (Access Token + Refresh Token com rotação), registro, login, logout e validação com Zod.",
   "main": "dist/server.js",
   "scripts": {
@@ -9,7 +9,11 @@
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prisma:deploy": "prisma migrate deploy"
   },
   "keywords": [
     "auth",
@@ -33,14 +37,21 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.7.1",
+    "@types/supertest": "^7.2.1",
     "@types/swagger-ui-express": "^4.1.8",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
     "prisma": "^6.17.0",
+    "supertest": "^7.3.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^3.2.7"
   }
 }

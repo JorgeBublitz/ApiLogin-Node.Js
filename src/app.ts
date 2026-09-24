@@ -32,6 +32,8 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Muitas requisições. Tente novamente mais tarde.' },
+  // Nos testes automatizados o limite atrapalharia a suíte
+  skip: () => env.nodeEnv === 'test',
 });
 app.use('/api', globalLimiter);
 
@@ -47,9 +49,14 @@ app.use((req: Request, res: Response) => {
 });
 
 // Tratamento de erros global
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error & { type?: string }, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({ error: err.message });
+  }
+
+  // JSON malformado no corpo da requisição
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'JSON inválido no corpo da requisição' });
   }
 
   if (err instanceof ZodError) {

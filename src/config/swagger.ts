@@ -2,16 +2,16 @@ export const swaggerDocument = {
   openapi: '3.0.0',
   info: {
     title: 'Auth API',
-    version: '1.0.0',
-    description: 'API de autenticação com JWT (Access Token e Refresh Token)',
+    version: '1.2.0',
+    description: 'API de autenticação com JWT: access token de curta duração e refresh token com rotação e revogação.',
     contact: {
-      name: 'Suporte',
-      email: 'suporte@example.com',
+      name: 'Jorge Luis Heringer Bublitz',
+      email: 'bublitzjorge3@gmail.com',
     },
   },
   servers: [
     {
-      url: 'http://localhost:3000',
+      url: 'http://localhost:3000/api',
       description: 'Servidor de desenvolvimento',
     },
   ],
@@ -75,8 +75,8 @@ export const swaggerDocument = {
                   },
                   password: {
                     type: 'string',
-                    minLength: 6,
-                    example: 'senha123',
+                    minLength: 8,
+                    example: 'senha1234',
                   },
                   name: {
                     type: 'string',
@@ -99,8 +99,18 @@ export const swaggerDocument = {
               },
             },
           },
+          '409': {
+            description: 'Email já está em uso',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error',
+                },
+              },
+            },
+          },
           '400': {
-            description: 'Erro de validação ou email já em uso',
+            description: 'Erro de validação',
             content: {
               'application/json': {
                 schema: {

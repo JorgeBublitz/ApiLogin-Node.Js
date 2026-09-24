@@ -8,6 +8,8 @@ export const registerSchema = z.object({
     .string({
       message: 'Email é obrigatório',
     })
+    .trim()
+    .toLowerCase()
     .email('Email inválido'),
   password: z
     .string({
@@ -29,6 +31,8 @@ export const loginSchema = z.object({
     .string({
       message: 'Email é obrigatório',
     })
+    .trim()
+    .toLowerCase()
     .email('Email inválido'),
   password: z.string({
     message: 'Senha é obrigatória',

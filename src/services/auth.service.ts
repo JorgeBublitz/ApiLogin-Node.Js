@@ -82,8 +82,13 @@ export class AuthService {
   }
 
   static async refreshAccessToken(refreshToken: string): Promise<TokenPair> {
-    // Verificar o refresh token
-    const payload = JwtUtil.verifyRefreshToken(refreshToken);
+    // Verificar o refresh token (assinatura e validade)
+    let payload;
+    try {
+      payload = JwtUtil.verifyRefreshToken(refreshToken);
+    } catch {
+      throw new AppError('Refresh token inválido', 401);
+    }
 
     // Verificar se o refresh token existe no banco e não expirou
     const storedToken = await prisma.refreshToken.findUnique({
