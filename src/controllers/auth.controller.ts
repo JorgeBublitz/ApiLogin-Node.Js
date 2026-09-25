@@ -1,6 +1,5 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
-import { AppError } from '../utils/app-error';
 import { RegisterInput, LoginInput, RefreshTokenInput } from '../utils/validation.schemas';
 
 export class AuthController {
@@ -8,7 +7,7 @@ export class AuthController {
    * POST /auth/register
    * Registra um novo usuário
    */
-  static async register(req: Request, res: Response): Promise<void> {
+  static async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const data: RegisterInput = req.body;
       const tokens = await AuthService.register(data);
@@ -18,7 +17,7 @@ export class AuthController {
         data: tokens,
       });
     } catch (error) {
-      AuthController.handleError(res, error);
+      next(error);
     }
   }
 
@@ -26,7 +25,7 @@ export class AuthController {
    * POST /auth/login
    * Realiza o login do usuário
    */
-  static async login(req: Request, res: Response): Promise<void> {
+  static async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const data: LoginInput = req.body;
       const tokens = await AuthService.login(data);
@@ -36,7 +35,7 @@ export class AuthController {
         data: tokens,
       });
     } catch (error) {
-      AuthController.handleError(res, error);
+      next(error);
     }
   }
 
@@ -44,7 +43,7 @@ export class AuthController {
    * POST /auth/refresh
    * Renova o access token usando um refresh token
    */
-  static async refresh(req: Request, res: Response): Promise<void> {
+  static async refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { refreshToken }: RefreshTokenInput = req.body;
       const tokens = await AuthService.refreshAccessToken(refreshToken);
@@ -54,7 +53,7 @@ export class AuthController {
         data: tokens,
       });
     } catch (error) {
-      AuthController.handleError(res, error);
+      next(error);
     }
   }
 
@@ -62,7 +61,7 @@ export class AuthController {
    * POST /auth/logout
    * Realiza o logout do usuário
    */
-  static async logout(req: Request, res: Response): Promise<void> {
+  static async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { refreshToken }: RefreshTokenInput = req.body;
       await AuthService.logout(refreshToken);
@@ -71,7 +70,7 @@ export class AuthController {
         message: 'Logout realizado com sucesso',
       });
     } catch (error) {
-      AuthController.handleError(res, error);
+      next(error);
     }
   }
 
@@ -79,7 +78,7 @@ export class AuthController {
    * GET /auth/me
    * Retorna os dados do usuário autenticado
    */
-  static async me(req: Request, res: Response): Promise<void> {
+  static async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       if (!req.user) {
         res.status(401).json({ error: 'Não autenticado' });
@@ -94,20 +93,7 @@ export class AuthController {
         },
       });
     } catch (error) {
-      AuthController.handleError(res, error);
+      next(error);
     }
-  }
-
-  /**
-   * Centraliza o tratamento de erros dos controllers
-   */
-  private static handleError(res: Response, error: unknown): void {
-    if (error instanceof AppError) {
-      res.status(error.statusCode).json({ error: error.message });
-      return;
-    }
-
-    console.error(error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

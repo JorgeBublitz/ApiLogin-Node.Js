@@ -3,16 +3,30 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env';
 import { JwtPayload } from '../types/jwt.types';
 
+interface ParsedExpiration {
+  value: number;
+  unit: 'd' | 'h' | 'm' | 's';
+}
+
+/**
+ * Interpreta strings como "7d", "1h", "30m", "10s" em { value, unit }
+ */
+function parseExpirationParts(exp: string): ParsedExpiration {
+  const match = exp.match(/^(\d+)([dhms])$/);
+  if (!match) throw new Error('Invalid expiration format');
+
+  return {
+    value: parseInt(match[1], 10),
+    unit: match[2] as ParsedExpiration['unit'],
+  };
+}
+
 export class JwtUtil {
   /**
    * Converte strings como "7d", "1h", "30m", "10s" em segundos
    */
   private static parseExpiration(exp: string): number {
-    const match = exp.match(/^(\d+)([dhms])$/);
-    if (!match) throw new Error('Invalid expiration format');
-
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
+    const { value, unit } = parseExpirationParts(exp);
 
     switch (unit) {
       case 'd': return value * 24 * 60 * 60;
@@ -70,12 +84,7 @@ export class JwtUtil {
    */
   static getRefreshTokenExpirationDate(): Date {
     const now = new Date();
-
-    const match = env.jwtRefreshExpiration.match(/^(\d+)([dhms])$/);
-    if (!match) throw new Error('Invalid JWT_REFRESH_EXPIRATION format');
-
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
+    const { value, unit } = parseExpirationParts(env.jwtRefreshExpiration);
 
     switch (unit) {
       case 'd': now.setDate(now.getDate() + value); break;

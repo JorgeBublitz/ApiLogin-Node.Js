@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 
 export class HashUtil {
-  private static readonly SALT_ROUNDS = 10;
+  private static readonly SALT_ROUNDS = 12;
 
   /**
    * Gera um hash da senha usando bcrypt
